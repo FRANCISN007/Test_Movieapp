@@ -1,3 +1,4 @@
+#database.py
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
@@ -6,8 +7,8 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = os.environ.get('DB_URL')
-#SQLALCHEMY_DATABASE_URL = "sqlite:///./moviestore.db"
+#SQLALCHEMY_DATABASE_URL = os.environ.get('DB_URL')
+SQLALCHEMY_DATABASE_URL = "sqlite:///./moviestore_db1"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL

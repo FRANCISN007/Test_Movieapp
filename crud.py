@@ -1,9 +1,6 @@
-
 # crud.py
 from sqlalchemy.orm import Session
-import models, schemas, auth
-from models import User, Movie
-from schemas import UserCreate
+import models, schemas
 
 def create_user(db: Session, user: schemas.UserCreate, hashed_password: str):
     db_user = models.User(
@@ -26,8 +23,7 @@ def create_movie(db: Session, movie: schemas.MovieCreate, user_id: int):
     db.commit()
     db.refresh(db_movie)
     return db_movie
-    #return {"message": "Movie created successfully!", "data": db_movie}
-
+    
 def get_movies(db: Session, skip: int = 0, limit: int = 10):
     return db.query(models.Movie).offset(skip).limit(limit).all()
 
@@ -63,7 +59,9 @@ def get_comments_for_movie(db: Session, movie_id: int):
     return db.query(models.Comment).filter(models.Comment.movie_id == movie_id).all()
 
 def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int):
-    db_rating = models.Rating(**rating.dict(), movie_id=movie_id)
+    db_rating = models.Rating(
+        **rating.dict(), movie_id=movie_id)
+    
     db.add(db_rating)
     db.commit()
     db.refresh(db_rating)
@@ -71,7 +69,5 @@ def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int):
 
 def get_ratings_for_movie(db: Session, movie_id: int):
     return db.query(models.Rating).filter(models.Rating.movie_id == movie_id).all()
-
-
 
 

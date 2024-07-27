@@ -7,6 +7,7 @@ from typing import List
 from database import engine, Base, get_db
 import crud, models, schemas, auth
 from loguru import logger
+from pathlib import Path
 
 
 logger.add("app.log", rotation="500 MB", level="DEBUG")
@@ -96,7 +97,6 @@ def read_movie(movie_id: int, db: Session = Depends(get_db)):
     return movie
 
 
-
 @app.put("/movies/{movie_id}", response_model=schemas.Movie)
 def update_movie(movie_id: int, movie: schemas.MovieUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
@@ -140,10 +140,10 @@ def delete_movie(movie_id: int, db: Session = Depends(get_db), current_user: mod
 
 # Rating endpoints
 @app.post("/movies/{movie_id}/rate/", response_model=schemas.Rating)
-def rate_movie(movie_id: int, rating: schemas.RatingCreate, db: Session = Depends(get_db)):
-    
+#def rate_movie(movie_id: int, rating: schemas.RatingCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+def create_rating(movie_id: int, rating: schemas.RatingCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):   
     """
-    This endpoint allows the public to rate any movie using the movie_id
+    This endpoint allows the authenticated users to rate any movie using the movie_id
     """
     movie = crud.get_movie_by_id(db=db, movie_id=movie_id)
     if movie is None:
@@ -166,9 +166,11 @@ def get_ratings_for_movie(movie_id: int, db: Session = Depends(get_db)):
     logger.info(f"Fetching ratings for movie:{movie.id}, {movie.title}")
     return crud.get_ratings_for_movie(db=db, movie_id=movie_id)
 
+
+
 # Comment endpoints
 @app.post("/movies/{movie_id}/comments/", response_model=schemas.Comment)
-def create_comment(movie_id: int, comment: schemas.CommentCreate, db: Session = Depends(get_db)):
+def create_comment(movie_id: int, comment: schemas.CommentCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     
     """
     This endpoint allows the public to comment on any movie using the movie_id
@@ -193,3 +195,4 @@ def get_comments_for_movie(movie_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Movie_id {movie_id} does not exist, Please try again")
     logger.info(f"Fetching comments for movie:{movie.id}, {movie.title}")
     return crud.get_comments_for_movie(db=db, movie_id=movie_id)
+

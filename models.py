@@ -31,14 +31,37 @@ class Movie(Base):
 
     owner = relationship("User", back_populates="movies")
     comments = relationship("Comment", back_populates="movie")
+    ratings = relationship("Rating", back_populates="movie")
+
+#class Rating(Base):
+   # __tablename__ = "ratings"
+
+    #id = Column(Integer, primary_key=True, index=True)
+    #stars = Column(Integer)
+    #movie_id = Column(Integer, ForeignKey("movies.id"))
+    
+    #id = Column(Integer, primary_key=True, index=True)
+    #title = Column(String, index=True)
+    #user_id = Column(Integer, ForeignKey("users.id"))
+    #movie_id = Column(Integer, ForeignKey("movies.id"))
+    #rating = Column(Float)
+    #description = Column(String, nullable=False)
+    
+    #movie = relationship("Movie", back_populates="ratings")
+    #owner_id = Column(Integer, ForeignKey("users.id"))
 
 class Rating(Base):
     __tablename__ = "ratings"
 
     id = Column(Integer, primary_key=True, index=True)
-    stars = Column(Integer)
+    #stars = Column(Integer)
     movie_id = Column(Integer, ForeignKey("movies.id"))
+    rating = Column(Float)
     
+
+    movie = relationship("Movie", back_populates="ratings")
+    owner_id = Column(Integer, ForeignKey("users.id"))
+ 
 
 class Comment(Base):
     __tablename__ = "comments"
@@ -48,3 +71,4 @@ class Comment(Base):
     movie_id = Column(Integer, ForeignKey("movies.id"))
 
     movie = relationship("Movie", back_populates="comments")
+

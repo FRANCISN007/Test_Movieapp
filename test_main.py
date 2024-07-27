@@ -19,10 +19,6 @@ def override_get_db():
 
 app.dependency_overrides[get_db] = override_get_db
 
-def test_read_main():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {"message":"WELCOME TO MY APP OF MOVIES"}
 
 # Set up and tear down for tests
 def setup_module(module):
@@ -30,6 +26,12 @@ def setup_module(module):
 
 def teardown_module(module):
     Base.metadata.drop_all(bind=engine)
+    
+def test_read_main():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"message":"WELCOME TO MY APP OF MOVIES"}
+
 
 # Test cases for each endpoint
 def test_signup():
@@ -88,5 +90,4 @@ def test_rate_movie():
     rating_response = response.json()
     
     assert rating_response ["stars"]== rating_data ["stars"]
-    #assert rating_response["comment"] == rating_data["comment"]
     assert rating_response["movie_id"] == movie_id

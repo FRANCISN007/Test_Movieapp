@@ -7,7 +7,6 @@ class UserBase(BaseModel):
     full_name: str
     
 class UserCreate(UserBase):
-    
     email: str
     password: str
 
@@ -43,9 +42,23 @@ class MovieCreate(MovieBase):
 class MovieUpdate(MovieBase):
     pass
 
+class MovieResponse(BaseModel):
+    title: str
+    description: str
+    average_rating: Optional[float]
+    
+#class RatingBase(BaseModel):
+    #stars: int
+    
+class RatingResponse(BaseModel):
+    user_id: int
+    username: str
+    title: str
+    description: str
+    rating: float
 
 class RatingBase(BaseModel):
-    stars: int
+    rating: float
 
 class RatingCreate(RatingBase):
     pass
