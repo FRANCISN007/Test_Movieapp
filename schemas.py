@@ -47,14 +47,12 @@ class MovieResponse(BaseModel):
     description: str
     average_rating: Optional[float]
     
-#class RatingBase(BaseModel):
-    #stars: int
     
 class RatingResponse(BaseModel):
     user_id: int
     username: str
     title: str
-    description: str
+    
     rating: float
 
 class RatingBase(BaseModel):
@@ -66,7 +64,7 @@ class RatingCreate(RatingBase):
 class Rating(RatingBase):
     id: int
     movie_id: int
-
+    
 
     class Config:
         orm_mode = True

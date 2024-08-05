@@ -60,7 +60,7 @@ def get_comments_for_movie(db: Session, movie_id: int):
 
 def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int):
     db_rating = models.Rating(
-        **rating.dict(), movie_id=movie_id)
+        **rating.model_dump(), movie_id=movie_id)
     
     db.add(db_rating)
     db.commit()
@@ -68,6 +68,9 @@ def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int):
     return db_rating
 
 def get_ratings_for_movie(db: Session, movie_id: int):
-    return db.query(models.Rating).filter(models.Rating.movie_id == movie_id).all()
+   return db.query(models.Rating).filter(models.Rating.movie_id == movie_id).all()
+   
 
 
+
+ 
