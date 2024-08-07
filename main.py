@@ -31,10 +31,15 @@ def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
     This Session is for user Registration, fill your details below to signup
     """
     db_user = crud.get_user_by_username(db, username=user.username)
+    db_user_by_email = crud.get_user_by_email(db, email=user.email)
     hashed_password = pwd_context.hash(user.password)
     if db_user:
         logger.error(f"user trying to register but username entered already exist: {user.username}")
         raise HTTPException(status_code=400, detail="Username already registered")
+    
+    if db_user_by_email:
+        logger.error(f"User trying to register but email entered already exists: {user.email}")
+        raise HTTPException(status_code=400, detail="Email already registered")
     return crud.create_user(db=db, user=user, hashed_password=hashed_password)
     
 
@@ -47,8 +52,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     if not user:
         logger.error(f"Failed login attempt for username: {form_data.username}")
         raise HTTPException(
-            status_code=401,
-            detail="Invalid username or password! check your spellings or register as a new user ",
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid Credential ",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(data={"sub": user.username})
@@ -56,7 +61,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 
 # Movie endpoints
-#@app.post("/movies/", response_model=schemas.Movie, status_code =401, tags= ["Movie"])
 @app.post("/movies/", response_model=schemas.Movie, status_code =status.HTTP_201_CREATED, tags= ["Movie"])
 def create_new_movie(movie: schemas.MovieCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
     """
@@ -111,7 +115,7 @@ def update_movie(movie_id: int, movie: schemas.MovieUpdate, db: Session = Depend
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Movie_id {movie_id} does not exist, Please try another movie_id")
     if existing_movie.owner_id != current_user.id:
         logger.warning(f"User {current_user.username} is not authorized to update movie: {movie.title}")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="We are sorry, you are not authorized to update this movie")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="We are sorry, you are not authorized to update this movie")
     logger.info(f"Updating movie details: {movie.title}")
     return crud.update_movie(db=db, movie_id=movie_id, movie=movie)
     
@@ -127,7 +131,7 @@ def delete_movie(movie_id: int, db: Session = Depends(get_db), current_user: mod
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Movie_id {movie_id} does not exist, Please try another movie_id")
     if existing_movie.owner_id != current_user.id:
         logger.warning(f"User {current_user.username} is not authorized to delete movie_id: {movie_id}")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"You are not authorized to delete movie_id {movie_id}; you can only delete movie you created")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"You are not authorized to delete movie_id {movie_id}")
     
      # Check if there are related ratings or comments
     if crud.get_ratings_for_movie(db=db, movie_id=movie_id):

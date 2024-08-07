@@ -1,16 +1,27 @@
 # schemas.py
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import List, Optional
+from datetime import datetime
 
-class UserBase(BaseModel):
+
+    
+class UserResponse(BaseModel):
+    id: int 
     username: str
     full_name: str
+    email: EmailStr
+ 
+class UserBase(BaseModel):
+    username: str
+    full_name: str  
+        
     
 class UserCreate(UserBase):
-    email: str
+    email: EmailStr
     password: str
 
-class User(UserBase):
+class User(UserBase): 
+    email: EmailStr
     id: int
 
     class Config:
@@ -31,6 +42,8 @@ class MovieBase(BaseModel):
 class Movie(MovieBase):
     id: int
     owner_id: int
+    time_created: datetime
+    owner: UserResponse
     
 
     class Config:
@@ -42,6 +55,7 @@ class MovieCreate(MovieBase):
 class MovieUpdate(MovieBase):
     pass
 
+    
 class MovieResponse(BaseModel):
     title: str
     description: str
@@ -78,6 +92,7 @@ class CommentCreate(CommentBase):
 class Comment(CommentBase):
     id: int
     movie_id: int
+    time_created: datetime
 
     class Config:
         orm_mode = True

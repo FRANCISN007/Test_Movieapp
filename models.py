@@ -1,6 +1,8 @@
 # models.py
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.expression import text
+from sqlalchemy.sql.sqltypes import TIMESTAMP
 from database import Base
 
 class User(Base):
@@ -9,10 +11,13 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String, unique=True, nullable=False, index=True)
     full_name = Column(String)
-    email = Column(String)
+    email = Column(String, nullable=False, unique=True)
+    time_created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     hashed_password = Column(String, nullable=False)
     
+    
     movies = relationship("Movie", back_populates="owner")
+    
 
 class Movie(Base):
     __tablename__ = "movies"
@@ -27,6 +32,7 @@ class Movie(Base):
     language=  Column(String)
     Runtime=  Column(String)
     year_released = Column(Integer)
+    time_created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="movies")
@@ -39,7 +45,7 @@ class Rating(Base):
     id = Column(Integer, primary_key=True, index=True)
     rating = Column(Float)
     
-    movie_id = Column(Integer, ForeignKey("movies.id"))
+    #movie_id = Column(Integer, ForeignKey("movies.id"))
     
     movie_id = Column(Integer, ForeignKey("movies.id"))
     
@@ -54,6 +60,8 @@ class Comment(Base):
     id = Column(Integer, primary_key=True, index=True)
     comment = Column(String)
     movie_id = Column(Integer, ForeignKey("movies.id"))
+    time_created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    
 
     movie = relationship("Movie", back_populates="comments")
 

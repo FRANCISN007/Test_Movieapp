@@ -2,6 +2,7 @@
 from sqlalchemy.orm import Session
 import models, schemas
 
+
 def create_user(db: Session, user: schemas.UserCreate, hashed_password: str):
     db_user = models.User(
         username=user.username, 
@@ -30,6 +31,9 @@ def get_movies(db: Session, skip: int = 0, limit: int = 10):
 # Read User Movies
 def get_user_movies(db: Session, user_id: int):
     return db.query(models.Movie).filter(models.Movie.owner_id == user_id).all()
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(models.User).filter(models.User.email == email).first()
 
 def get_movie_by_id(db: Session, movie_id: int):
     return db.query(models.Movie).filter(models.Movie.id == movie_id).first()
