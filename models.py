@@ -1,5 +1,5 @@
 # models.py
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
@@ -43,17 +43,22 @@ class Rating(Base):
     __tablename__ = "ratings"
 
     id = Column(Integer, primary_key=True, index=True)
-    rating = Column(Float)
-    
-    #movie_id = Column(Integer, ForeignKey("movies.id"))
+    rating = Column(Float, nullable=False)
     
     movie_id = Column(Integer, ForeignKey("movies.id"))
-    
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    
+    user_id = Column(Integer, ForeignKey("users.id"))
     movie = relationship("Movie", back_populates="ratings")
     
+    __table_args__ = (UniqueConstraint('user_id', 'movie_id', name='unique_user_movie_rating'),)
+    
+#class Rating(Base):
+    #__tablename__ = "ratings"
 
+    #user_id = Column(Integer, ForeignKey ("users.id", ondelete = "CASADE"), primary_key=True)
+    #movie_id = Column(Integer, ForeignKey ("movies.id", ondelete = "CASADE"), primary_key=True)
+    
+    #rating = Column(Float)
+    
 class Comment(Base):
     __tablename__ = "comments"
 

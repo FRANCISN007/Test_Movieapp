@@ -1,5 +1,5 @@
 # schemas.py
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, conint
 from typing import List, Optional
 from datetime import datetime
 
@@ -10,6 +10,12 @@ class UserResponse(BaseModel):
     username: str
     full_name: str
     email: EmailStr
+    
+class UserRating(BaseModel):
+    id: int 
+    #username: str
+    #full_name: str
+    #email: EmailStr    
  
 class UserBase(BaseModel):
     username: str
@@ -61,6 +67,13 @@ class MovieResponse(BaseModel):
     description: str
     average_rating: Optional[float]
     
+ 
+class Rate(BaseModel):
+    movie_id: int
+    #dir: conint(le=1)
+    rating: float
+     
+ 
     
 class RatingResponse(BaseModel):
     user_id: int
@@ -78,6 +91,7 @@ class RatingCreate(RatingBase):
 class Rating(RatingBase):
     id: int
     movie_id: int
+    
     
 
     class Config:

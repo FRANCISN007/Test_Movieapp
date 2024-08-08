@@ -156,19 +156,54 @@ def delete_movie(movie_id: int, db: Session = Depends(get_db), current_user: mod
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 # Rating endpoints
-@app.post("/movies/{movie_id}/rate/", response_model=schemas.Rating, status_code =status.HTTP_201_CREATED, tags= ["Rating"])
+#@app.post("/movies/{movie_id}/rate/", response_model=schemas.Rating, status_code =status.HTTP_201_CREATED, tags= ["Rating"])
+#def create_rating(movie_id: int, rating: schemas.RatingCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):   
+    #"""
+    #This endpoint allows the authenticated users to rate any movie using the movie_id
+    #"""
+    #movie = crud.get_movie_by_id(db=db, movie_id=movie_id)
+    #if movie is None:
+        #logger.warning(f"Movie not found with id: {movie_id}")
+        #raise HTTPException(status_code=404, detail=f"Movie_id {movie_id} does not exist, Please try again")
+    
+    #db_rating = crud.create_rating(db=db, rating=rating, movie_id=movie_id)
+    #logger.info(f"Rating movie details: {movie.title}, {rating}")
+    #return db_rating
+
+#new
+@app.post("/movies/{movie_id}/rate/", response_model=schemas.Rating, status_code=status.HTTP_201_CREATED, tags=["Rating"])
 def create_rating(movie_id: int, rating: schemas.RatingCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):   
     """
-    This endpoint allows the authenticated users to rate any movie using the movie_id
+    This endpoint allows authenticated users to rate any movie using the movie_id,
+    but a user can only rate a movie once. Ratings from is between (0-5)
     """
     movie = crud.get_movie_by_id(db=db, movie_id=movie_id)
     if movie is None:
         logger.warning(f"Movie not found with id: {movie_id}")
         raise HTTPException(status_code=404, detail=f"Movie_id {movie_id} does not exist, Please try again")
     
-    db_rating = crud.create_rating(db=db, rating=rating, movie_id=movie_id)
-    logger.info(f"Rating movie details: {movie.title}, {rating}")
+    db_rating = crud.create_rating(db=db, rating=rating, movie_id=movie_id, user_id=current_user.id)
+    logger.info(f"User {current_user.username} rated movie: {movie.title}, rating: {rating.rating}")
     return db_rating
+
+
+#check ratings
+#@app.post("/movies/rate", status_code =status.HTTP_201_CREATED, tags= ["Rating"])
+#def create_rating(movie_id: int, rate: schemas.Rate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):      
+    #rate_query=  db.query(models.Rating).filter(
+        #models.Rating.movie_id == rate.movie_id, models.Rating.user_id == current_user.id )
+    #found_rating = rate_query.first()
+    
+    #if (rate.rating >=0 and rate.rating <=5):
+        #if found_rating:
+            #raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"user {current_user.id} has already rated on movie {rate.movie_id}")
+        #new_rate= models.Rating(movie_id = rate.movie_id, user_id = current_user.id)   
+        #db.add(new_rate)
+        #db.commit()
+        #return {"message": "successufully added rate"}    
+    #else:
+           #raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=f"rating {rate} not acceptable: rating should be between 0-5") 
+     
 
 @app.get("/movies/{movie_id}/ratings/", response_model=List[schemas.Rating], tags= ["Rating"])
 def get_ratings_for_movie(movie_id: int, db: Session = Depends(get_db)):

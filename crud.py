@@ -1,7 +1,11 @@
 # crud.py
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import models, schemas
 from typing import Optional
+from sqlalchemy.orm import Session
+from models import Rating
+
 
 def create_user(db: Session, user: schemas.UserCreate, hashed_password: str):
     db_user = models.User(
@@ -62,14 +66,25 @@ def create_comment(db: Session, comment: schemas.CommentCreate, movie_id: int):
 def get_comments_for_movie(db: Session, movie_id: int):
     return db.query(models.Comment).filter(models.Comment.movie_id == movie_id).all()
 
-def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int):
-    db_rating = models.Rating(
-        **rating.model_dump(), movie_id=movie_id)
+
+def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int, user_id: int):
+    # Check if the user has already rated this movie
+    existing_rating = db.query(models.Rating).filter(models.Rating.movie_id == movie_id, models.Rating.user_id == user_id).first()
     
-    db.add(db_rating)
+    if existing_rating:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"You have already rated movie_id {movie_id}")
+    
+     # Check if the rating is within the acceptable range
+    if rating.rating < 0 or rating.rating > 5:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Rating range should be from 0 to 5")
+       
+    new_rating = Rating(movie_id=movie_id, user_id=user_id, rating=rating.rating)
+    db.add(new_rating)
     db.commit()
-    db.refresh(db_rating)
-    return db_rating
+    db.refresh(new_rating)
+    return new_rating
+    
+
 
 def get_ratings_for_movie(db: Session, movie_id: int):
    return db.query(models.Rating).filter(models.Rating.movie_id == movie_id).all()
