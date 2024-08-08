@@ -3,7 +3,7 @@ from fastapi import FastAPI, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from auth import pwd_context, authenticate_user, create_access_token, get_current_user
-from typing import List 
+from typing import List, Optional
 from database import engine, Base, get_db
 import crud, models, schemas, auth
 from loguru import logger
@@ -68,9 +68,10 @@ def create_new_movie(movie: schemas.MovieCreate, db: Session = Depends(get_db), 
     """
     logger.info(f"User {current_user.username} creating a movie: {movie.title}")
     return crud.create_movie(db=db, movie=movie, user_id=current_user.id)
-    
+
+
 @app.get("/movies/", response_model=List[schemas.Movie], tags= ["Movie"])
-def list_all_movies(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+def list_all_movies(db: Session = Depends(get_db), skip: int = 0, limit: int = 10):
     
     """
     This endpoint lists all available Movies created by all user
@@ -80,8 +81,8 @@ def list_all_movies(skip: int = 0, limit: int = 10, db: Session = Depends(get_db
     return crud.get_movies(db=db, skip=skip, limit=limit)
 
 # Read User Movies
-@app.get("/movies/me", response_model=list[schemas.Movie], tags= ["Movie"])
-def list_my_movies(skip: int = 0, limit: int = 10, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+@app.get("/movies/List", response_model=list[schemas.Movie], tags= ["Movie"])
+def my_movies(skip: int = 0, limit: int = 10, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
     """
     This endpoint lists all Movies created by the current user
     """
@@ -89,8 +90,17 @@ def list_my_movies(skip: int = 0, limit: int = 10, current_user: models.User = D
     logger.info(f"Fetching only the list of movie(s) created by the user_id:{current_user.id}")
     return movies
 
+@app.get("/movies/Search", response_model=List[schemas.Movie], tags= ["Movie"])
+def by_title(search: Optional[str] = "", skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    """
+    You can use this endpoint to search for any movie title even if the title name provided doesn't match correctly.
+    The Searching entry is case sensitive 
+    """
+    return db.query(models.Movie).filter( models.Movie.title.contains(search)).offset(skip).limit(limit).all()
+    
+
 @app.get("/movies/{movie_id}", response_model=schemas.Movie, tags= ["Movie"])
-def read_movie(movie_id: int, db: Session = Depends(get_db)):
+def get_movie_by_id(movie_id: int, db: Session = Depends(get_db)):
     
     """
     This endpoint views one Movie at a time using the movie_id

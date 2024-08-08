@@ -1,7 +1,7 @@
 # crud.py
 from sqlalchemy.orm import Session
 import models, schemas
-
+from typing import Optional
 
 def create_user(db: Session, user: schemas.UserCreate, hashed_password: str):
     db_user = models.User(
