@@ -156,26 +156,11 @@ def delete_movie(movie_id: int, db: Session = Depends(get_db), current_user: mod
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 # Rating endpoints
-#@app.post("/movies/{movie_id}/rate/", response_model=schemas.Rating, status_code =status.HTTP_201_CREATED, tags= ["Rating"])
-#def create_rating(movie_id: int, rating: schemas.RatingCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):   
-    #"""
-    #This endpoint allows the authenticated users to rate any movie using the movie_id
-    #"""
-    #movie = crud.get_movie_by_id(db=db, movie_id=movie_id)
-    #if movie is None:
-        #logger.warning(f"Movie not found with id: {movie_id}")
-        #raise HTTPException(status_code=404, detail=f"Movie_id {movie_id} does not exist, Please try again")
-    
-    #db_rating = crud.create_rating(db=db, rating=rating, movie_id=movie_id)
-    #logger.info(f"Rating movie details: {movie.title}, {rating}")
-    #return db_rating
-
-#new
 @app.post("/movies/{movie_id}/rate/", response_model=schemas.Rating, status_code=status.HTTP_201_CREATED, tags=["Rating"])
 def create_rating(movie_id: int, rating: schemas.RatingCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):   
     """
     This endpoint allows authenticated users to rate any movie using the movie_id,
-    but a user can only rate a movie once. Ratings from is between (0-5)
+    but a user can only rate a movie once. Ratings is between (0-5)
     """
     movie = crud.get_movie_by_id(db=db, movie_id=movie_id)
     if movie is None:
