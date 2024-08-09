@@ -57,7 +57,7 @@ def delete_movie(db: Session, movie_id: int):
     db.commit()
 
 def create_comment(db: Session, comment: schemas.CommentCreate, movie_id: int, user_id: int):
-    db_comment = models.Comment(**comment.dict(), movie_id=movie_id, user_id=user_id)
+    db_comment = models.Comment(**comment.dict(), movie_id=movie_id, )
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)
@@ -65,6 +65,15 @@ def create_comment(db: Session, comment: schemas.CommentCreate, movie_id: int, u
 
 def get_comments_for_movie(db: Session, movie_id: int):
     return db.query(models.Comment).filter(models.Comment.movie_id == movie_id).all()
+
+def get_comment_by_id(db: Session, comment_id: int):
+    return db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+
+def delete_comment(db: Session, comment_id: int):
+    db_comment = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+    if db_comment:
+        db.delete(db_comment)
+        db.commit()
 
 
 def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int, user_id: int):
@@ -84,6 +93,7 @@ def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int, user
     db.refresh(new_rating)
     return new_rating
     
+
 
 def get_ratings_for_movie(db: Session, movie_id: int):
    return db.query(models.Rating).filter(models.Rating.movie_id == movie_id).all()

@@ -213,3 +213,26 @@ def get_comments_for_movie(movie_id: int, db: Session = Depends(get_db)):
     logger.info(f"Fetching comments for movie:{movie.id}, {movie.title}")
     return crud.get_comments_for_movie(db=db, movie_id=movie_id)
 
+@app.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Comment"])
+def delete_comment(comment_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    This endpoint allows the user to delete their own comment using the comment_id.
+    """
+    # Fetch the comment by its ID
+    existing_comment = crud.get_comment_by_id(db=db, comment_id=comment_id)
+    
+    # Check if the comment exists
+    if existing_comment is None:
+        logger.warning(f"Comment not found with id: {comment_id}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Comment_id {comment_id} does not exist, Please try another comment_id")
+    
+    # Check if the current user is the owner of the comment
+    if existing_comment.user_id != current_user.id:
+        logger.warning(f"User {current_user.username} is not authorized to delete comment_id: {comment_id}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not authorized to delete this comment")
+    
+    # Delete the comment
+    crud.delete_comment(db=db, comment_id=comment_id)
+    logger.info(f"Comment_id {comment_id} deleted successfully")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
