@@ -17,7 +17,8 @@ class User(Base):
     
     
     movies = relationship("Movie", back_populates="owner")
-    
+    ratings = relationship("Rating", back_populates="created_by")
+    comments = relationship("Comment", back_populates="posted_by")
 
 class Movie(Base):
     __tablename__ = "movies"
@@ -47,17 +48,12 @@ class Rating(Base):
     
     movie_id = Column(Integer, ForeignKey("movies.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
+    
     movie = relationship("Movie", back_populates="ratings")
+    created_by = relationship("User", back_populates="ratings")
     
     __table_args__ = (UniqueConstraint('user_id', 'movie_id', name='unique_user_movie_rating'),)
     
-#class Rating(Base):
-    #__tablename__ = "ratings"
-
-    #user_id = Column(Integer, ForeignKey ("users.id", ondelete = "CASADE"), primary_key=True)
-    #movie_id = Column(Integer, ForeignKey ("movies.id", ondelete = "CASADE"), primary_key=True)
-    
-    #rating = Column(Float)
     
 class Comment(Base):
     __tablename__ = "comments"
@@ -67,6 +63,8 @@ class Comment(Base):
     movie_id = Column(Integer, ForeignKey("movies.id"))
     time_created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     
+    movie_id = Column(Integer, ForeignKey("movies.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
 
     movie = relationship("Movie", back_populates="comments")
-
+    posted_by = relationship("User", back_populates="comments")

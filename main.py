@@ -172,24 +172,6 @@ def create_rating(movie_id: int, rating: schemas.RatingCreate, db: Session = Dep
     return db_rating
 
 
-#check ratings
-#@app.post("/movies/rate", status_code =status.HTTP_201_CREATED, tags= ["Rating"])
-#def create_rating(movie_id: int, rate: schemas.Rate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):      
-    #rate_query=  db.query(models.Rating).filter(
-        #models.Rating.movie_id == rate.movie_id, models.Rating.user_id == current_user.id )
-    #found_rating = rate_query.first()
-    
-    #if (rate.rating >=0 and rate.rating <=5):
-        #if found_rating:
-            #raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"user {current_user.id} has already rated on movie {rate.movie_id}")
-        #new_rate= models.Rating(movie_id = rate.movie_id, user_id = current_user.id)   
-        #db.add(new_rate)
-        #db.commit()
-        #return {"message": "successufully added rate"}    
-    #else:
-           #raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=f"rating {rate} not acceptable: rating should be between 0-5") 
-     
-
 @app.get("/movies/{movie_id}/ratings/", response_model=List[schemas.Rating], tags= ["Rating"])
 def get_ratings_for_movie(movie_id: int, db: Session = Depends(get_db)):
     
@@ -214,7 +196,7 @@ def create_comment(movie_id: int, comment: schemas.CommentCreate, db: Session = 
     if movie is None:
         logger.warning(f"Movie not found with id: {movie_id}")
         raise HTTPException(status_code=404, detail=f"Movie_id {movie_id} does not exist, Please try again")
-    db_comment = crud.create_comment(db=db, comment=comment, movie_id=movie_id)
+    db_comment = crud.create_comment(db=db, comment=comment, movie_id=movie_id, user_id=current_user.id)
     logger.info(f"Commenting on movie: {movie.id}, {movie.title}")
     return db_comment
 

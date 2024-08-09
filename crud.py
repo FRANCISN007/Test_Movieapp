@@ -56,8 +56,8 @@ def delete_movie(db: Session, movie_id: int):
     db.query(models.Movie).filter(models.Movie.id == movie_id).delete()
     db.commit()
 
-def create_comment(db: Session, comment: schemas.CommentCreate, movie_id: int):
-    db_comment = models.Comment(**comment.dict(), movie_id=movie_id)
+def create_comment(db: Session, comment: schemas.CommentCreate, movie_id: int, user_id: int):
+    db_comment = models.Comment(**comment.dict(), movie_id=movie_id, user_id=user_id)
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)
@@ -76,7 +76,7 @@ def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int, user
     
      # Check if the rating is within the acceptable range
     if rating.rating < 0 or rating.rating > 5:
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Rating range should be from 0 to 5")
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=f"{rating} is invalid, Rating range should be from 0 to 5")
        
     new_rating = Rating(movie_id=movie_id, user_id=user_id, rating=rating.rating)
     db.add(new_rating)
@@ -84,7 +84,6 @@ def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int, user
     db.refresh(new_rating)
     return new_rating
     
-
 
 def get_ratings_for_movie(db: Session, movie_id: int):
    return db.query(models.Rating).filter(models.Rating.movie_id == movie_id).all()

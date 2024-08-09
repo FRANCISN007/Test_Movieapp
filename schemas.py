@@ -1,5 +1,5 @@
 # schemas.py
-from pydantic import BaseModel, EmailStr, conint
+from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from datetime import datetime
 
@@ -13,10 +13,15 @@ class UserResponse(BaseModel):
     
 class UserRating(BaseModel):
     id: int 
-    #username: str
-    #full_name: str
-    #email: EmailStr    
- 
+    username: str
+    full_name: str
+    
+class UserComment(BaseModel):
+    id: int 
+    username: str
+    full_name: str   
+       
+    
 class UserBase(BaseModel):
     username: str
     full_name: str  
@@ -61,19 +66,19 @@ class MovieCreate(MovieBase):
 class MovieUpdate(MovieBase):
     pass
 
-    
-class MovieResponse(BaseModel):
-    title: str
-    description: str
-    average_rating: Optional[float]
-    
- 
-class Rate(BaseModel):
-    movie_id: int
-    #dir: conint(le=1)
+
+
+class RatingBase(BaseModel):
     rating: float
+    
+class Rate(BaseModel):
+    rating: float
+    
      
- 
+class Rating(Rate):
+    id: int
+    movie_id: int
+    created_by: UserRating
     
 class RatingResponse(BaseModel):
     user_id: int
@@ -82,16 +87,10 @@ class RatingResponse(BaseModel):
     
     rating: float
 
-class RatingBase(BaseModel):
-    rating: float
+    
 
 class RatingCreate(RatingBase):
     pass
-
-class Rating(RatingBase):
-    id: int
-    movie_id: int
-    
     
 
     class Config:
@@ -99,16 +98,21 @@ class Rating(RatingBase):
 
 class CommentBase(BaseModel):
     comment: str
-
-class CommentCreate(CommentBase):
-    pass
-
+    
+    
 class Comment(CommentBase):
     id: int
     movie_id: int
     time_created: datetime
-
+    posted_by: UserComment
+    
+    
     class Config:
         orm_mode = True
-        
 
+class CommentCreate(CommentBase):
+    pass
+
+
+
+    
