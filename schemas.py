@@ -55,7 +55,7 @@ class Movie(MovieBase):
     owner_id: int
     time_created: datetime
     owner: UserResponse
-    
+    average_rating: Optional[float] 
 
     class Config:
         orm_mode = True

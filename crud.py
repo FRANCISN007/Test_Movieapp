@@ -91,7 +91,26 @@ def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int, user
     db.add(new_rating)
     db.commit()
     db.refresh(new_rating)
+    
+    update_movie_average_rating(db, movie_id)
+    
     return new_rating
+
+def update_movie_average_rating(db: Session, movie_id: int):
+    movie = db.query(models.Movie).filter(models.Movie.id == movie_id).first()
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    
+    ratings = db.query(models.Rating).filter(models.Rating.movie_id == movie_id).all()
+    if ratings:
+        average_rating = sum(r.rating for r in ratings) / len(ratings)
+        movie.average_rating = round(average_rating, 2)
+    else:
+        movie.average_rating = None
+    
+    db.commit()
+    db.refresh(movie)
+
     
 
 
@@ -104,8 +123,16 @@ def get_rating_by_id(db: Session, rating_id: int):
 def delete_rating(db: Session, rating_id: int):
     db_rating = db.query(models.Rating).filter(models.Rating.id == rating_id).first()
     if db_rating:
+        
+        movie_id = db_rating.movie_id
+        
         db.delete(db_rating)
         db.commit()
+        
+        update_movie_average_rating(db, movie_id)
+        
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Rating_id {rating_id} does not exist")   
 
    
 

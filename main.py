@@ -207,6 +207,7 @@ def delete_rating(rating_id: int, db: Session = Depends(get_db), current_user: m
     crud.delete_rating(db=db, rating_id=rating_id)
     logger.info(f"Rating_id {rating_id} deleted successfully")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+   
 
 
 # Comment endpoints

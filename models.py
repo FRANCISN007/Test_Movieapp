@@ -35,6 +35,8 @@ class Movie(Base):
     year_released = Column(Integer)
     time_created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     owner_id = Column(Integer, ForeignKey("users.id"))
+    
+    average_rating = Column(Float, nullable=True)
 
     owner = relationship("User", back_populates="movies")
     comments = relationship("Comment", back_populates="movie")
