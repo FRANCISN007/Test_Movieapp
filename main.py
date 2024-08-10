@@ -91,7 +91,7 @@ def my_movies(skip: int = 0, limit: int = 10, current_user: models.User = Depend
     return movies
 
 @app.get("/movies/Search", response_model=List[schemas.Movie], tags= ["Movie"])
-def by_title(search: Optional[str] = "", skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+def by_movie_title(search: Optional[str] = "", skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     """
     You can use this endpoint to search for any movie title even if the title name provided doesn't match correctly.
     The Searching entry is case sensitive 

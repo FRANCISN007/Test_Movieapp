@@ -57,7 +57,7 @@ def delete_movie(db: Session, movie_id: int):
     db.commit()
 
 def create_comment(db: Session, comment: schemas.CommentCreate, movie_id: int, user_id: int):
-    db_comment = models.Comment(**comment.dict(), movie_id=movie_id, )
+    db_comment = models.Comment(**comment.dict(), movie_id=movie_id, user_id= user_id)
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)

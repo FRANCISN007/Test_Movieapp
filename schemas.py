@@ -54,7 +54,7 @@ class Movie(MovieBase):
     id: int
     owner_id: int
     time_created: datetime
-    owner: UserResponse
+    owner: Optional[UserResponse] 
     average_rating: Optional[float] 
 
     class Config:
@@ -78,7 +78,7 @@ class Rate(BaseModel):
 class Rating(Rate):
     id: int
     movie_id: int
-    created_by: UserRating
+    created_by: Optional[UserRating]
     
 class RatingResponse(BaseModel):
     user_id: int
@@ -93,8 +93,8 @@ class RatingCreate(RatingBase):
     pass
     
 
-    class Config:
-        orm_mode = True
+    #class Config:
+        #orm_mode = True
 
 class CommentBase(BaseModel):
     comment: str
@@ -104,7 +104,7 @@ class Comment(CommentBase):
     id: int
     movie_id: int
     time_created: datetime
-    posted_by: UserComment
+    posted_by: Optional[UserComment]
     
     
     class Config:
