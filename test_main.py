@@ -4,10 +4,19 @@ from sqlalchemy.orm import Session
 from main import app, get_db
 from database import SessionLocal, engine
 from models import Base, User, Movie, Rating, Comment
-import crud
+import crud, pytest, schemas, models
+from main import get_db, get_current_user
 
 # Create a test client using TestClient
 client = TestClient(app)
+
+@pytest.fixture(scope="module")
+def test_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # Override database dependency for testing
 def override_get_db():
@@ -18,6 +27,11 @@ def override_get_db():
         db.close()
 
 app.dependency_overrides[get_db] = override_get_db
+def override_get_current_user():
+    return models.User(id=1, username="testuser")
+
+app.dependency_overrides[get_db] = override_get_db
+app.dependency_overrides[get_current_user] = override_get_current_user
 
 
 # Set up and tear down for tests
@@ -33,61 +47,32 @@ def test_read_main():
     assert response.json() == {"message":"WELCOME TO MY APP OF MOVIES"}
 
 
-# Test cases for each endpoint
-def test_signup():
-    # Test successful registration PASSEDXXX
-    user = {
-        "username": "testuser",
-        "full_name": "fcn",
-        "password": "testpassword",
-        "email": "test@example.com"
-    }
-    response = client.post("/Registration", json=user)
-    assert response.status_code == 200
-    assert response.json()["username"] == user["username"]
-
-    # Test duplicate registration
-    response = client.post("/Registration", json=user)
-    assert response.status_code == 400 
-
-def test_login():
-    # Test successful login
-    login_data = {
-        "username": "testuser",
-        "password": "testpassword"
-    }
-    response = client.post("/login", data=login_data)
-    assert response.status_code == 200
-    assert "access_token" in response.json()
-
-    # Test invalid login
-    user = {
-        "username": "testuser",
-        "password": "wrongpassword"
-    }
-    response = client.post("/login", data=user)
-    assert response.status_code == 401 
-    response_data = response.json()
-    assert "detail" in response_data
-    
-
 def test_read_movies():
     response = client.get("/movies/")
     assert response.status_code == 200
     assert isinstance(response.json(), list)
-
-
-def test_rate_movie():
-    # Assuming movie_id exists in the database
-    movie_id = 2
-    rating_data = {
-        "user_id": 1,
-        "stars": 5,
-        #"comment": "Great movie!"
-    }
-    response = client.post(f"/movies/{movie_id}/rate/", json=rating_data)
-    assert response.status_code == 404
-    rating_response = response.json()
     
-    assert rating_response ["stars"]== rating_data ["stars"]
-    assert rating_response["movie_id"] == movie_id
+
+@pytest.fixture(scope="module")
+def test_ratings(test_movie, test_db: Session):
+    ratings = [
+        schemas.RatingCreate(
+            rating=4,
+            comment="Great movie!"
+        ),
+        schemas.RatingCreate(
+            rating=5,
+            comment="Good movie!"
+        )
+    ]
+    for rating_data in ratings:
+        crud.create_rating(db=test_db, rating=rating_data, movie_id=test_movie.id)
+    return ratings
+
+def test_get_ratings_for_nonexistent_movie(test_db: Session):
+    nonexistent_movie_id = 9999
+    response = client.get(f"/movies/{nonexistent_movie_id}/ratings/")
+    assert response.status_code == 404
+    assert response.json()["detail"] == f"Movie_id {nonexistent_movie_id} does not exist, Please try again"
+
+

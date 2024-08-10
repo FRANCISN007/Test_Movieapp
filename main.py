@@ -185,6 +185,30 @@ def get_ratings_for_movie(movie_id: int, db: Session = Depends(get_db)):
     logger.info(f"Fetching ratings for movie:{movie.id}, {movie.title}")
     return crud.get_ratings_for_movie(db=db, movie_id=movie_id, )
 
+@app.delete("/ratings/{rating_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Rating"])
+def delete_rating(rating_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    This endpoint allows a user to delete their own rating using the rating_id.
+    """
+    # Fetch the rating by its ID
+    existing_rating = crud.get_rating_by_id(db=db, rating_id=rating_id)
+    
+    # Check if the rating exists
+    if existing_rating is None:
+        logger.warning(f"Rating not found with id: {rating_id}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Rating_id {rating_id} does not exist, Please try another rating_id")
+    
+    # Check if the current user is the owner of the rating
+    if existing_rating.user_id != current_user.id:
+        logger.warning(f"User {current_user.username} is not authorized to delete rating_id: {rating_id}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not authorized to delete this rating")
+    
+    # Delete the rating
+    crud.delete_rating(db=db, rating_id=rating_id)
+    logger.info(f"Rating_id {rating_id} deleted successfully")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 # Comment endpoints
 @app.post("/movies/{movie_id}/comments/", response_model=schemas.Comment, status_code =status.HTTP_201_CREATED, tags= ["Comment"])
 def create_comment(movie_id: int, comment: schemas.CommentCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):

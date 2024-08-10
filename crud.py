@@ -97,6 +97,16 @@ def create_rating(db: Session, rating: schemas.RatingCreate, movie_id: int, user
 
 def get_ratings_for_movie(db: Session, movie_id: int):
    return db.query(models.Rating).filter(models.Rating.movie_id == movie_id).all()
+
+def get_rating_by_id(db: Session, rating_id: int):
+    return db.query(models.Rating).filter(models.Rating.id == rating_id).first()
+
+def delete_rating(db: Session, rating_id: int):
+    db_rating = db.query(models.Rating).filter(models.Rating.id == rating_id).first()
+    if db_rating:
+        db.delete(db_rating)
+        db.commit()
+
    
 
 
