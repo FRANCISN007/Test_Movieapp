@@ -18,7 +18,7 @@ class User(Base):
     
     movies = relationship("Movie", back_populates="owner")
     ratings = relationship("Rating", back_populates="created_by")
-    comments = relationship("Comment", back_populates="posted_by")
+    comments = relationship("Comment", back_populates="created_by")
 
 class Movie(Base):
     __tablename__ = "movies"
@@ -69,4 +69,4 @@ class Comment(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
 
     movie = relationship("Movie", back_populates="comments")
-    posted_by = relationship("User", back_populates="comments")
+    created_by = relationship("User", back_populates="comments")

@@ -104,7 +104,7 @@ class Comment(CommentBase):
     id: int
     movie_id: int
     time_created: datetime
-    posted_by: Optional[UserComment]
+    created_by: Optional[UserComment]
     
     
     class Config:

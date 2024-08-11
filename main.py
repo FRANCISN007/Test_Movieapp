@@ -260,4 +260,3 @@ def delete_comment(comment_id: int, db: Session = Depends(get_db), current_user:
     crud.delete_comment(db=db, comment_id=comment_id)
     logger.info(f"Comment_id {comment_id} deleted successfully")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
