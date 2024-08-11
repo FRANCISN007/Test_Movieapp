@@ -1,5 +1,5 @@
 # schemas.py
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 
@@ -34,9 +34,22 @@ class UserCreate(UserBase):
 class User(UserBase): 
     email: EmailStr
     id: int
+    
+    model_config = ConfigDict(from_attributes=True)    
 
-    class Config:
-        orm_mode = True
+    #class Config:
+        #orm_mode = True
+        
+###        
+class UserResponseModel(BaseModel):
+    id: int
+    username: str
+    full_name: str
+    email: EmailStr
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+        
 
 class MovieBase(BaseModel):
     title: str
@@ -113,6 +126,33 @@ class Comment(CommentBase):
 class CommentCreate(CommentBase):
     pass
 
+####
+
+# reply
+class ReplyCreate(BaseModel):
+    reply: str
+    
+    
+class ReplyResponse(BaseModel):
+    id: int
+    reply: str
+    user_id: int
+    comment_id: int
 
 
+class CommentResponse(BaseModel):
+    id: int
+    comment: str
+    user: UserResponseModel
+    movie: MovieBase
+    #created_at: datetime
+    replies: List[ReplyResponse]
+
+    model_config = ConfigDict(from_attributes=True)
+    
+class MovieCommentResponseModel(BaseModel):
+    id: int 
+    comments: List[CommentResponse] = []
+
+    model_config = ConfigDict(from_attributes=True)    
     

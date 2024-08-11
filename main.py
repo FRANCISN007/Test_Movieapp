@@ -10,6 +10,7 @@ from loguru import logger
 from pathlib import Path
 
 
+
 logger.add("app.log", rotation="500 MB", level="DEBUG")
 
 
@@ -91,7 +92,7 @@ def my_movies(skip: int = 0, limit: int = 10, current_user: models.User = Depend
     return movies
 
 @app.get("/movies/Search", response_model=List[schemas.Movie], tags= ["Movie"])
-def by_movie_title(search: Optional[str] = "", skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+def movie_by_title(search: Optional[str] = "", skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     """
     You can use this endpoint to search for any movie title even if the title name provided doesn't match correctly.
     The Searching entry is case sensitive 
@@ -209,34 +210,54 @@ def delete_rating(rating_id: int, db: Session = Depends(get_db), current_user: m
     return Response(status_code=status.HTTP_204_NO_CONTENT)
    
 
-
-# Comment endpoints
-@app.post("/movies/{movie_id}/comments/", response_model=schemas.Comment, status_code =status.HTTP_201_CREATED, tags= ["Comment"])
-def create_comment(movie_id: int, comment: schemas.CommentCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    
+# comments, response_model=schema.CommentResponse
+@app.post("/movies/{movie_id}/comments/", response_model=schemas.CommentResponse, status_code =status.HTTP_201_CREATED, tags= ["Comment"])
+def create_comment(comment: schemas.CommentCreate, 
+                   movie_id: int, 
+                   current_user: schemas.User = Depends(get_current_user), 
+                   db: Session = Depends(get_db)):
     """
-    This endpoint allows the public to comment on any movie using the movie_id
+    This endpoint allows the user to comment on any movie using the movie_id
     """
     movie = crud.get_movie_by_id(db=db, movie_id=movie_id)
     if movie is None:
         logger.warning(f"Movie not found with id: {movie_id}")
         raise HTTPException(status_code=404, detail=f"Movie_id {movie_id} does not exist, Please try again")
-    db_comment = crud.create_comment(db=db, comment=comment, movie_id=movie_id, user_id=current_user.id)
-    logger.info(f"Commenting on movie: {movie.id}, {movie.title}")
+    
+    db_comment = crud.create_comment(db, comment, current_user.id, movie_id)
     return db_comment
 
-@app.get("/movies/{movie_id}/comments/", response_model=List[schemas.Comment], tags= ["Comment"])
-def get_comments_for_movie(movie_id: int, db: Session = Depends(get_db)):
+    
+@app.get("/movies/{movie_id}/comments/", response_model=schemas.MovieCommentResponseModel, tags= ["Comment"])
+def get_comments(movie_id: int, db: Session = Depends(get_db)):
     
     """
-    This endpoint allows the public to view comments attached to any movie using the movie_id
+    This endpoint allows the public to view comments & replies attached to any movie using the movie_id
     """
     movie = crud.get_movie_by_id(db=db, movie_id=movie_id)
     if movie is None:
         logger.warning(f"Movie not found with id: {movie_id}")
         raise HTTPException(status_code=404, detail=f"Movie_id {movie_id} does not exist, Please try again")
     logger.info(f"Fetching comments for movie:{movie.id}, {movie.title}")
-    return crud.get_comments_for_movie(db=db, movie_id=movie_id)
+    return crud.get_comments(db=db, movie_id=movie_id)    
+
+# create reply
+@app.post('/{comment_id}/replies', response_model=schemas.CommentResponse, tags= ["Comment"])
+def create_reply(payload: schemas.ReplyCreate, comment_id:int, current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    db_comment = crud.get_comment_by_id(db, comment_id)
+    if not db_comment:
+        logger.warning(f"comment_id not found with id: {comment_id}")
+        raise HTTPException(status_code=404, detail=f"Comment_id {comment_id} does not exist")
+    
+    reply = crud.create_reply(db, payload, comment_id, current_user.id)
+    db_comment.replies.append(reply)
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
+    return db_comment
+
+
+
 
 @app.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Comment"])
 def delete_comment(comment_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
@@ -260,3 +281,27 @@ def delete_comment(comment_id: int, db: Session = Depends(get_db), current_user:
     crud.delete_comment(db=db, comment_id=comment_id)
     logger.info(f"Comment_id {comment_id} deleted successfully")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@app.delete("/Reply/{reply_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Comment"])
+def delete_comment_replies(reply_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    This endpoint allows the user to delete their replies made on comment using the reply_id.
+    """
+    # Fetch the comment by its ID
+    existing_reply = crud.get_reply_by_id(db=db, reply_id=reply_id)
+    
+    # Check if the comment exists
+    if existing_reply is None:
+        logger.warning(f"Reply_id {reply_id} not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Comment_id {reply_id} does not exist, Please try another comment_id")
+    
+    # Check if the current user is the owner of the comment
+    if existing_reply.user_id != current_user.id:
+        logger.warning(f"User {current_user.username} is not authorized to delete comment_id: {reply_id}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not authorized to delete this comment")
+    
+    # Delete the comment
+    crud.delete_reply(db=db, reply_id=reply_id)
+    logger.info(f"Comment_id {reply_id} deleted successfully")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+

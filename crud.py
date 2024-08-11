@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import models, schemas
 from typing import Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from models import Rating
 
 
@@ -55,24 +55,64 @@ def update_movie(db: Session, movie_id: int, movie: schemas.MovieUpdate):
 def delete_movie(db: Session, movie_id: int):
     db.query(models.Movie).filter(models.Movie.id == movie_id).delete()
     db.commit()
+    
+def get_comments_for_movie(db: Session, movie_id: int):
+    return db.query(models.Comment).filter(models.Comment.movie_id == movie_id).all()    
 
-def create_comment(db: Session, comment: schemas.CommentCreate, movie_id: int, user_id: int):
-    db_comment = models.Comment(**comment.dict(), movie_id=movie_id, user_id= user_id)
+#def create_comment(db: Session, comment: schemas.CommentCreate, movie_id: int, user_id: int):
+    #db_comment = models.Comment(**comment.model_dump(), movie_id=movie_id, user_id= user_id)
+    #db.add(db_comment)
+    #db.commit()
+    #db.refresh(db_comment)
+    #return db_comment
+
+###
+def create_comment(db:Session, payload:schemas.CommentCreate, current_user: int, movie_id):
+    db_comment = models.Comment(**payload.model_dump(),
+                                user_id=current_user,
+                                movie_id=movie_id
+                             )
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)
     return db_comment
 
-def get_comments_for_movie(db: Session, movie_id: int):
-    return db.query(models.Comment).filter(models.Comment.movie_id == movie_id).all()
+
+def get_comments(db: Session, movie_id: int ):
+     # Fetch the movie with its comments and their replies
+    movie_with_comments = db.query(models.Movie).options(joinedload(models.Movie.comments).joinedload(models.Comment.replies)
+    ).filter(models.Movie.id == movie_id).first()
+    return movie_with_comments
 
 def get_comment_by_id(db: Session, comment_id: int):
     return db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+
+def get_reply_by_id(db: Session, reply_id: int):
+    return db.query(models.Reply).filter(models.Reply.id == reply_id).first()
+
+# reply
+def create_reply(db: Session, reply: schemas.ReplyCreate, comment_id: int, current_user: int):
+    db_reply_comment = models.Reply(**reply.model_dump(),
+                                    user_id = current_user,
+                                    comment_id=comment_id
+                                    )
+    db.add(db_reply_comment)
+    db.commit()
+    db.refresh(db_reply_comment)
+    return db_reply_comment
+
 
 def delete_comment(db: Session, comment_id: int):
     db_comment = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
     if db_comment:
         db.delete(db_comment)
+        db.commit()
+
+
+def delete_reply(db: Session, reply_id: int):
+    db_reply = db.query(models.Reply).filter(models.Reply.id == reply_id).first()
+    if db_reply:
+        db.delete(db_reply)
         db.commit()
 
 

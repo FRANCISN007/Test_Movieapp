@@ -1,9 +1,10 @@
 # models.py
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, UniqueConstraint, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from database import Base
+from datetime import datetime
 
 class User(Base):
     __tablename__ = "users"
@@ -12,7 +13,7 @@ class User(Base):
     username = Column(String, unique=True, nullable=False, index=True)
     full_name = Column(String)
     email = Column(String, nullable=False, unique=True)
-    time_created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     hashed_password = Column(String, nullable=False)
     
     
@@ -62,11 +63,29 @@ class Comment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     comment = Column(String)
-    movie_id = Column(Integer, ForeignKey("movies.id"))
     time_created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     
     movie_id = Column(Integer, ForeignKey("movies.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
 
-    movie = relationship("Movie", back_populates="comments")
+    #movie = relationship("Movie", back_populates="comments")
     created_by = relationship("User", back_populates="comments")
+    
+    user = relationship("User")
+    movie = relationship("Movie", back_populates="comments")
+    replies = relationship("Reply", back_populates="comment")
+    
+    
+class Reply(Base):
+    __tablename__ = "replies"
+    
+    id = Column(Integer, primary_key=True)
+    reply = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    comment_id = Column(Integer, ForeignKey("comments.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    
+    comment = relationship("Comment", back_populates="replies")
+    user = relationship("User")
+    
