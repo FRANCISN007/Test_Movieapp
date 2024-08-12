@@ -5,6 +5,7 @@ from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from database import Base
 from datetime import datetime
+from psycopg2 import Timestamp
 
 class User(Base):
     __tablename__ = "users"
@@ -13,7 +14,8 @@ class User(Base):
     username = Column(String, unique=True, nullable=False, index=True)
     full_name = Column(String)
     email = Column(String, nullable=False, unique=True)
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    created_at = Column(DateTime, default=datetime.utcnow)
+
     hashed_password = Column(String, nullable=False)
     
     
@@ -34,7 +36,8 @@ class Movie(Base):
     language=  Column(String)
     Runtime=  Column(String)
     year_released = Column(Integer)
-    time_created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    created_at = Column(DateTime, default=datetime.utcnow)
+
     owner_id = Column(Integer, ForeignKey("users.id"))
     
     average_rating = Column(Float, nullable=True)
@@ -51,6 +54,7 @@ class Rating(Base):
     
     movie_id = Column(Integer, ForeignKey("movies.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)
     
     movie = relationship("Movie", back_populates="ratings")
     created_by = relationship("User", back_populates="ratings")
@@ -63,8 +67,8 @@ class Comment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     comment = Column(String)
-    time_created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    
+    created_at = Column(DateTime, default=datetime.utcnow)
+
     movie_id = Column(Integer, ForeignKey("movies.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
 

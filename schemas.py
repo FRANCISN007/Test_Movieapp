@@ -66,7 +66,7 @@ class MovieBase(BaseModel):
 class Movie(MovieBase):
     id: int
     owner_id: int
-    time_created: datetime
+    created_at: datetime
     owner: Optional[UserResponse] 
     average_rating: Optional[float] 
 
@@ -91,6 +91,7 @@ class Rate(BaseModel):
 class Rating(Rate):
     id: int
     movie_id: int
+    created_at: datetime
     created_by: Optional[UserRating]
     
 class RatingResponse(BaseModel):
@@ -116,7 +117,7 @@ class CommentBase(BaseModel):
 class Comment(CommentBase):
     id: int
     movie_id: int
-    time_created: datetime
+    created_at: datetime
     created_by: Optional[UserComment]
     
     
@@ -138,6 +139,7 @@ class ReplyResponse(BaseModel):
     reply: str
     user_id: int
     comment_id: int
+    created_at: datetime
 
 
 class CommentResponse(BaseModel):
