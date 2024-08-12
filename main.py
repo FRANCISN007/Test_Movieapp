@@ -7,10 +7,13 @@ from typing import List, Optional
 from database import engine, Base, get_db
 import crud, models, schemas, auth
 from loguru import logger
+from logger import get_logger
 
 
+logger = get_logger(__name__)
 
-logger.add("app.log", rotation="500 MB", level="DEBUG")
+
+#logger.add("app.log", rotation="500 MB", level="DEBUG")
 
 Base.metadata.create_all(bind=engine)
 
@@ -28,16 +31,18 @@ def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
     """
     This Session is for user Registration, fill your details below to signup
     """
+    logger.info("creating user.....")
     db_user = crud.get_user_by_username(db, username=user.username)
     db_user_by_email = crud.get_user_by_email(db, email=user.email)
     hashed_password = pwd_context.hash(user.password)
     if db_user:
-        logger.error(f"user trying to register but username entered already exist: {user.username}")
+        logger.warning(f"user trying to register but username entered already exist: {user.username}")
         raise HTTPException(status_code=400, detail="Username already registered")
     
     if db_user_by_email:
         logger.error(f"User trying to register but email entered already exists: {user.email}")
         raise HTTPException(status_code=400, detail="Email already registered")
+    logger.info("user successfully created")
     return crud.create_user(db=db, user=user, hashed_password=hashed_password)
     
 
@@ -55,6 +60,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(data={"sub": user.username})
+    logger.info(f"token generated for {form_data.username}")
     return {"access_token": access_token, "token_type": "bearer"}
 
 
@@ -213,6 +219,7 @@ def create_comment(comment: schemas.CommentCreate,
                    movie_id: int, 
                    current_user: schemas.User = Depends(get_current_user), 
                    db: Session = Depends(get_db)):
+    logger.info(f"creating comment on {movie_id}")
     """
     This endpoint allows the user to comment on any movie using the movie_id
     """
