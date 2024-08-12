@@ -7,18 +7,15 @@ from typing import List, Optional
 from database import engine, Base, get_db
 import crud, models, schemas, auth
 from loguru import logger
-from pathlib import Path
 
 
 
 logger.add("app.log", rotation="500 MB", level="DEBUG")
 
-
 Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI app
 app = FastAPI() 
-
 
 @app.get("/")
 def read_root():
@@ -153,8 +150,8 @@ def delete_movie(movie_id: int, db: Session = Depends(get_db), current_user: mod
     
     crud.delete_movie(db=db, movie_id=movie_id)
     logger.info(f"Movie_id {movie_id} deleted successfully")
-    #return {"message": "Movie deleted successfully"}
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return {"message": "Movie deleted successfully"}
+    
 
 # Rating endpoints
 @app.post("/movies/{movie_id}/rate/", response_model=schemas.Rating, status_code=status.HTTP_201_CREATED, tags=["Rating"])
@@ -186,7 +183,7 @@ def get_ratings_for_movie(movie_id: int, db: Session = Depends(get_db)):
     logger.info(f"Fetching ratings for movie:{movie.id}, {movie.title}")
     return crud.get_ratings_for_movie(db=db, movie_id=movie_id, )
 
-@app.delete("/ratings/{rating_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Rating"])
+@app.delete("/ratings/{rating_id}", tags=["Rating"])
 def delete_rating(rating_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
     This endpoint allows a user to delete their own rating using the rating_id.
@@ -207,7 +204,7 @@ def delete_rating(rating_id: int, db: Session = Depends(get_db), current_user: m
     # Delete the rating
     crud.delete_rating(db=db, rating_id=rating_id)
     logger.info(f"Rating_id {rating_id} deleted successfully")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return {"message": "Rating deleted successfully"}
    
 
 # comments, response_model=schema.CommentResponse
@@ -241,25 +238,8 @@ def get_comments(movie_id: int, db: Session = Depends(get_db)):
     logger.info(f"Fetching comments for movie:{movie.id}, {movie.title}")
     return crud.get_comments(db=db, movie_id=movie_id)    
 
-# create reply
-@app.post('/{comment_id}/replies', response_model=schemas.CommentResponse, tags= ["Comment"])
-def create_reply(payload: schemas.ReplyCreate, comment_id:int, current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    db_comment = crud.get_comment_by_id(db, comment_id)
-    if not db_comment:
-        logger.warning(f"comment_id not found with id: {comment_id}")
-        raise HTTPException(status_code=404, detail=f"Comment_id {comment_id} does not exist")
-    
-    reply = crud.create_reply(db, payload, comment_id, current_user.id)
-    db_comment.replies.append(reply)
-    db.add(db_comment)
-    db.commit()
-    db.refresh(db_comment)
-    return db_comment
 
-
-
-
-@app.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Comment"])
+@app.delete("/comments/{comment_id}", tags=["Comment"])
 def delete_comment(comment_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
     This endpoint allows the user to delete their own comment using the comment_id.
@@ -280,28 +260,48 @@ def delete_comment(comment_id: int, db: Session = Depends(get_db), current_user:
     # Delete the comment
     crud.delete_comment(db=db, comment_id=comment_id)
     logger.info(f"Comment_id {comment_id} deleted successfully")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return {"message": "Comment deleted successfully"}
 
-@app.delete("/Reply/{reply_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Comment"])
-def delete_comment_replies(reply_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+# create reply
+@app.post('/{comment_id}/replies', response_model=schemas.CommentResponse, tags= ["Reply Comment"])
+def create_reply(payload: schemas.ReplyCreate, comment_id:int, current_user: schemas.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    db_comment = crud.get_comment_by_id(db, comment_id)
+    
+    """
+    This endpoint allows the user to create a reply upon an existing comment to a movie 
+    """
+    
+    if not db_comment:
+        logger.warning(f"comment_id {comment_id} not found")
+        raise HTTPException(status_code=404, detail=f"Comment_id {comment_id} does not exist")
+    
+    reply = crud.create_reply(db, payload, comment_id, current_user.id)
+    db_comment.replies.append(reply)
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
+    return db_comment
+
+
+@app.delete("/Reply/{reply_id}", tags=["Reply Comment"])
+def delete_reply(reply_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
     This endpoint allows the user to delete their replies made on comment using the reply_id.
     """
-    # Fetch the comment by its ID
+
     existing_reply = crud.get_reply_by_id(db=db, reply_id=reply_id)
     
-    # Check if the comment exists
+    # Check if the reply_id exists
     if existing_reply is None:
         logger.warning(f"Reply_id {reply_id} not found")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Comment_id {reply_id} does not exist, Please try another comment_id")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Reply_id {reply_id} does not exist, Please try another comment_id")
     
-    # Check if the current user is the owner of the comment
+    # Check if the current user is the owner of the reply
     if existing_reply.user_id != current_user.id:
-        logger.warning(f"User {current_user.username} is not authorized to delete comment_id: {reply_id}")
+        logger.warning(f"User {current_user.username} is not authorized to delete reply_id: {reply_id}")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not authorized to delete this comment")
     
-    # Delete the comment
+    # Delete the reply
     crud.delete_reply(db=db, reply_id=reply_id)
-    logger.info(f"Comment_id {reply_id} deleted successfully")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
+    logger.info(f"Reply_id {reply_id} deleted successfully")
+    return {"message": "Reply deleted successfully"}

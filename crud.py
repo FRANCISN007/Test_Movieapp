@@ -2,7 +2,6 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import models, schemas
-from typing import Optional
 from sqlalchemy.orm import Session, joinedload
 from models import Rating
 
@@ -59,14 +58,7 @@ def delete_movie(db: Session, movie_id: int):
 def get_comments_for_movie(db: Session, movie_id: int):
     return db.query(models.Comment).filter(models.Comment.movie_id == movie_id).all()    
 
-#def create_comment(db: Session, comment: schemas.CommentCreate, movie_id: int, user_id: int):
-    #db_comment = models.Comment(**comment.model_dump(), movie_id=movie_id, user_id= user_id)
-    #db.add(db_comment)
-    #db.commit()
-    #db.refresh(db_comment)
-    #return db_comment
 
-###
 def create_comment(db:Session, payload:schemas.CommentCreate, current_user: int, movie_id):
     db_comment = models.Comment(**payload.model_dump(),
                                 user_id=current_user,
@@ -150,8 +142,6 @@ def update_movie_average_rating(db: Session, movie_id: int):
     
     db.commit()
     db.refresh(movie)
-
-    
 
 
 def get_ratings_for_movie(db: Session, movie_id: int):
