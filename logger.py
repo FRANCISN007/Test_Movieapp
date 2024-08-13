@@ -2,21 +2,21 @@
 import logging
 import logging.handlers
 
-#PAPERTRAIL_HOST ='logs3.papertrailapp.com'
-#PAPERTRAIL_PORT = 18858
+PAPERTRAIL_HOST ='logs3.papertrailapp.com'
+PAPERTRAIL_PORT = 18858
 
-#handler = logging.handlers.SysLogHandler(address=(PAPERTRAIL_HOST, PAPERTRAIL_PORT))
-#formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+handler = logging.handlers.SysLogHandler(address=(PAPERTRAIL_HOST, PAPERTRAIL_PORT))
+formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
-    #handlers=[handler]
+    handlers=[handler]
     
 #Terminal log    
-    datefmt="%Y-%m-%d %H:%M:%S",
-    filename="basic.log"
+    #datefmt="%Y-%m-%d %H:%M:%S",
+    #filename="basic.log"
     
 )
 

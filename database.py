@@ -7,8 +7,8 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-#SQLALCHEMY_DATABASE_URL = os.environ.get('DB_URL')
-SQLALCHEMY_DATABASE_URL = "sqlite:///./moviestore_db1"
+SQLALCHEMY_DATABASE_URL = os.environ.get('DB_URL')
+#SQLALCHEMY_DATABASE_URL = "sqlite:///./moviestore_db5"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL
@@ -18,6 +18,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Dependency
+
 def get_db():
     db = SessionLocal()
     try:
