@@ -219,7 +219,7 @@ def create_comment(comment: schemas.CommentCreate,
                    movie_id: int, 
                    current_user: schemas.User = Depends(get_current_user), 
                    db: Session = Depends(get_db)):
-    logger.info(f"creating comment on {movie_id}")
+    logger.info(f"creating comment on movie_id {movie_id} by {current_user.username}")
     """
     This endpoint allows the user to comment on any movie using the movie_id
     """
@@ -282,12 +282,18 @@ def create_reply(payload: schemas.ReplyCreate, comment_id:int, current_user: sch
         logger.warning(f"comment_id {comment_id} not found")
         raise HTTPException(status_code=404, detail=f"Comment_id {comment_id} does not exist")
     
-    reply = crud.create_reply(db, payload, comment_id, current_user.id)
+    # Extract the original comment text
+    original_comment = db_comment.comment
+    movie_id = db_comment.movie_id
+    
+    reply = crud.create_reply(db, payload, comment_id, current_user.id, original_comment, movie_id )
     db_comment.replies.append(reply)
     db.add(db_comment)
     db.commit()
     db.refresh(db_comment)
     return db_comment
+
+
 
 
 @app.delete("/Reply/{reply_id}", tags=["Reply Comment"])

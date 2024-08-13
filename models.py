@@ -87,9 +87,12 @@ class Reply(Base):
     reply = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"))
     comment_id = Column(Integer, ForeignKey("comments.id"), nullable=True)
+    original_comment = Column(String, nullable=False)
+    movie_id = Column(Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     
     comment = relationship("Comment", back_populates="replies")
     user = relationship("User")
+    
     

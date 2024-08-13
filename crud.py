@@ -83,10 +83,12 @@ def get_reply_by_id(db: Session, reply_id: int):
     return db.query(models.Reply).filter(models.Reply.id == reply_id).first()
 
 # reply
-def create_reply(db: Session, reply: schemas.ReplyCreate, comment_id: int, current_user: int):
+def create_reply(db: Session, reply: schemas.ReplyCreate, comment_id: int, current_user: int, original_comment: str, movie_id: int):
     db_reply_comment = models.Reply(**reply.model_dump(),
                                     user_id = current_user,
-                                    comment_id=comment_id
+                                    comment_id=comment_id,
+                                    original_comment=original_comment,
+                                    movie_id=movie_id
                                     )
     db.add(db_reply_comment)
     db.commit()

@@ -139,6 +139,8 @@ class ReplyResponse(BaseModel):
     reply: str
     user_id: int
     comment_id: int
+    original_comment: str
+    movie_id: int
     created_at: datetime
 
 
