@@ -1,11 +1,8 @@
 # models.py
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, UniqueConstraint, DateTime
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import text
-from sqlalchemy.sql.sqltypes import TIMESTAMP
 from database import Base
 from datetime import datetime
-from psycopg2 import Timestamp
 
 class User(Base):
     __tablename__ = "users"
@@ -15,13 +12,13 @@ class User(Base):
     full_name = Column(String)
     email = Column(String, nullable=False, unique=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-
     hashed_password = Column(String, nullable=False)
     
     
     movies = relationship("Movie", back_populates="owner")
     ratings = relationship("Rating", back_populates="created_by")
     comments = relationship("Comment", back_populates="created_by")
+    
 
 class Movie(Base):
     __tablename__ = "movies"
@@ -37,21 +34,19 @@ class Movie(Base):
     Runtime=  Column(String)
     year_released = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
-
     owner_id = Column(Integer, ForeignKey("users.id"))
-    
     average_rating = Column(Float, nullable=True)
 
     owner = relationship("User", back_populates="movies")
     comments = relationship("Comment", back_populates="movie")
     ratings = relationship("Rating", back_populates="movie")
+    
 
 class Rating(Base):
     __tablename__ = "ratings"
 
     id = Column(Integer, primary_key=True, index=True)
-    rating = Column(Float, nullable=False)
-    
+    rating = Column(Float, nullable=False)  
     movie_id = Column(Integer, ForeignKey("movies.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -68,11 +63,9 @@ class Comment(Base):
     id = Column(Integer, primary_key=True, index=True)
     comment = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
-
     movie_id = Column(Integer, ForeignKey("movies.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
 
-    #movie = relationship("Movie", back_populates="comments")
     created_by = relationship("User", back_populates="comments")
     
     user = relationship("User")
@@ -90,8 +83,7 @@ class Reply(Base):
     original_comment = Column(String, nullable=False)
     movie_id = Column(Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-
-    
+ 
     comment = relationship("Comment", back_populates="replies")
     user = relationship("User")
     

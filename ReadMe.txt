@@ -115,12 +115,21 @@ This endpoint enables the user to permanently delete the movie created by himsel
 Note: you can not delete any movie that has already been rated or commented on.
 
 Movie Rating:
-Rate a movie (public access): Anybody can rate any movie by clicking the rate movie and then provide the movid_id to rate
-Get ratings for a movie: Anybody can view any movie ratings, select the movie_id you want to view its ratings
+Rate a movie (authenticated access): Only authenticated user has the right to rate any movie by providing the movid_id to rate
+Get ratings for a movie (plubic access): Anybody can view any rated movie by providing the movie_id you want to view its ratings
+To delete a Rating, the Rating id is required for authenticated user only to carry this operation
 
 Comments:
-Add a comment to a movie (public access): Anybody can make comment to any movie by providing the movie_id and create a commemts
+Add a comment to a movie (authenticated access): only authenticated user has the right to comment to any movie by providing the movie_id
 View comments for a movie (public access): Anybody can view comment made on any movie by provding the movid_id to its comments
+To delete a comment, the comment id is required for authenticated user to carry out this operation.
+
+Reply:
+Replying a comment (authenticated access): Only authenticated user has the right to reply a comment by providing the comment_id
+To delete a Reply (authenticated access): the Reply id is required for authenticated user to carry out this operation
+
+
+
 
 Note: PLease, ensure you click the "Try it Out" button at every endpoint to enter any information, 
 then click the Execute botton to process your information.

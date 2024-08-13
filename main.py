@@ -232,7 +232,7 @@ def create_comment(comment: schemas.CommentCreate,
     return db_comment
 
     
-@app.get("/movies/{movie_id}/comments/", response_model=schemas.MovieCommentResponseModel, tags= ["Comment"])
+@app.get("/movies/{movie_id}/comments/", response_model=schemas.MovieCommentResponse, tags= ["Comment"])
 def get_comments(movie_id: int, db: Session = Depends(get_db)):
     
     """

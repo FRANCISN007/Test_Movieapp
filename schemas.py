@@ -37,10 +37,7 @@ class User(UserBase):
     
     model_config = ConfigDict(from_attributes=True)    
 
-    #class Config:
-        #orm_mode = True
-        
-###        
+    
 class UserResponseModel(BaseModel):
     id: int
     username: str
@@ -94,21 +91,10 @@ class Rating(Rate):
     created_at: datetime
     created_by: Optional[UserRating]
     
-class RatingResponse(BaseModel):
-    user_id: int
-    username: str
-    title: str
-    
-    rating: float
-
-    
 
 class RatingCreate(RatingBase):
     pass
     
-
-    #class Config:
-        #orm_mode = True
 
 class CommentBase(BaseModel):
     comment: str
@@ -127,9 +113,7 @@ class Comment(CommentBase):
 class CommentCreate(CommentBase):
     pass
 
-####
 
-# reply
 class ReplyCreate(BaseModel):
     reply: str
     
@@ -149,13 +133,13 @@ class CommentResponse(BaseModel):
     comment: str
     user: UserResponseModel
     movie: MovieBase
-    #created_at: datetime
     replies: List[ReplyResponse]
 
     model_config = ConfigDict(from_attributes=True)
     
-class MovieCommentResponseModel(BaseModel):
-    id: int 
+    
+class MovieCommentResponse(BaseModel):
+    
     comments: List[CommentResponse] = []
 
     model_config = ConfigDict(from_attributes=True)    
