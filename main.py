@@ -10,6 +10,8 @@ from loguru import logger
 from logger import get_logger
 
 
+
+
 logger = get_logger(__name__)
 
 
@@ -60,7 +62,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(data={"sub": user.username})
-    logger.info(f"token generated for {form_data.username}")
+    logger.info(f"user authorisation successfull for {form_data.username}")
     return {"access_token": access_token, "token_type": "bearer"}
 
 
@@ -157,6 +159,7 @@ def delete_movie(movie_id: int, db: Session = Depends(get_db), current_user: mod
     crud.delete_movie(db=db, movie_id=movie_id)
     logger.info(f"Movie_id {movie_id} deleted successfully")
     return {"message": "Movie deleted successfully"}
+
     
 
 # Rating endpoints

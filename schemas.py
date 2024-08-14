@@ -1,5 +1,5 @@
 # schemas.py
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 
@@ -9,7 +9,7 @@ class UserResponse(BaseModel):
     id: int 
     username: str
     full_name: str
-    email: EmailStr
+    email: str
     
 class UserRating(BaseModel):
     id: int 
@@ -28,11 +28,11 @@ class UserBase(BaseModel):
         
     
 class UserCreate(UserBase):
-    email: EmailStr
+    email: str
     password: str
 
 class User(UserBase): 
-    email: EmailStr
+    email: str
     id: int
     
     model_config = ConfigDict(from_attributes=True)    
@@ -42,7 +42,7 @@ class UserResponseModel(BaseModel):
     id: int
     username: str
     full_name: str
-    email: EmailStr
+    email: str
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
