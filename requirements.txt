@@ -96,4 +96,5 @@ uvicorn==0.30.1
 watchfiles==0.22.0
 wcwidth==0.2.13
 websockets==12.0
-win32-setctime==1.1.
+win32-setctime==1.1.0
+pywin32==306
